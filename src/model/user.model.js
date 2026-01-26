@@ -53,9 +53,6 @@ const userSchema = new mongoose.Schema(
   { timestamps: true },
 );
 
-// AUTO DELETE USER IF NOT LOGGED IN FOR 7 DAYS
-
-userSchema.index({ lastLoginAt: 1 }, { expireAfterSeconds: 60 * 60 * 24 * 7 });
 
 userSchema.pre('save', async function () {
   if (!this.isModified('password')) return;
