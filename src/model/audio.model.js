@@ -35,4 +35,6 @@ const audioSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+audioSchema.index({ _id: 1, uploadedBy: 1 });
+
 export const Audio = mongoose.model("Audio", audioSchema);

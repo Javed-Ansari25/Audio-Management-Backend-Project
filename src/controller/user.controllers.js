@@ -167,7 +167,8 @@ const regenerateAccessAndRefreshToken = asyncHandler(async (req, res) => {
 });
 
 const getAudioFile = asyncHandler(async (req, res) => {
-  const audio = await Audio.find({ isActive: true });
+  const audio = await Audio.find({ isActive: true })
+  .populate("uploadedBy", "username email")
 
   return res
     .status(200)

@@ -49,5 +49,31 @@ const deleteAudioById = asyncHandler(async (req, res) => {
     );
 });
 
+const updateAudioDetails = asyncHandler(async (req, res) => {
+  const { audioId } = req.params;
+  const { title, description, fileUrl } = req.body;
 
-export {uploadAudio, deleteAudioById}
+  if (!mongoose.Types.ObjectId.isValid(audioId)) {
+    throw new ApiError(400, "Invalid Audio ID");
+  }
+
+  if (!title?.trim() || !description?.trim()) {
+    throw new ApiError(400, "All are required");
+  }
+
+  const audio = await Audio.findOneAndUpdate(
+    { _id: audioId, uploadedBy: req.user._id },
+    { $set: { title, description, fileUrl } },
+    { new: true ,  projection: { title: 1, description: 1 }}
+  );
+
+  if (!audio) {
+    throw new ApiError(404, "Audio not found or unauthorized");
+  }
+
+  return res.status(200).json(
+    new ApiResponse(200, audio, "Audio details updated successfully")
+  );
+});
+
+export {uploadAudio, deleteAudioById, updateAudioDetails}
