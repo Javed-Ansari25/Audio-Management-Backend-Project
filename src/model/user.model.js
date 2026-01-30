@@ -45,10 +45,12 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
+
     loginAttempts: { 
       type: Number, 
       default: 0 
     },
+    
     lockUntil: { 
       type: Date 
     },
