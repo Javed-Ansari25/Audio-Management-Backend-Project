@@ -76,7 +76,6 @@ const loginUser = asyncHandler(async (req, res) => {
   }
 
   const isPasswordCorrect = await user.isPasswordCorrect(password);
-
   if (!isPasswordCorrect) {
     const updates = {
       $inc : {loginAttempts : 1}
@@ -93,7 +92,6 @@ const loginUser = asyncHandler(async (req, res) => {
   }
 
   const { accessToken, refreshToken } = await generateAccessAndRefreshToken(user._id);
-
   await user.updateOne(
     {_id: user._id},
     {
@@ -156,26 +154,20 @@ const logoutUser = asyncHandler(async (req, res) => {
 });
 
 const regenerateAccessAndRefreshToken = asyncHandler(async (req, res) => {
-  const incomingRefreshToken =
-    req.cookies?.refreshToken || req.body?.refreshToken;
+  const incomingRefreshToken = req.cookies?.refreshToken || req.body?.refreshToken;
 
   if (!incomingRefreshToken) {
     throw new ApiError(401, 'Unauthorized request');
   }
 
-  const decoded = jwt.verify(
-    incomingRefreshToken,
-    process.env.REFRESH_TOKEN_SECRET,
-  );
+  const decoded = jwt.verify(incomingRefreshToken, process.env.REFRESH_TOKEN_SECRET);
   const user = await User.findById(decoded._id);
 
   if (!user || incomingRefreshToken !== user.refreshToken) {
     throw new ApiError(401, 'Invalid or expired refresh token');
   }
 
-  const { accessToken, refreshToken } = await generateAccessAndRefreshToken(
-    user._id,
-  );
+  const { accessToken, refreshToken } = await generateAccessAndRefreshToken(user._id);
 
   const options = {
     httpOnly: true,
