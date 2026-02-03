@@ -4,11 +4,13 @@ const audioSchema = new mongoose.Schema(
   {
     title: {
       type: String,
-      required: true
+      required: true,
+      trim : true
     },
     description : {
       type: String,
-      required: true
+      required: true,
+      trim: true
     },
 
     fileUrl: {
@@ -16,12 +18,7 @@ const audioSchema = new mongoose.Schema(
       required: true
     },
 
-    // fileType: {
-    //   type: String,
-    //   enum: ["audio/mpeg", "audio/wav", "audio/mp3"]
-    // },
-
-    uploadedBy: {
+    artist: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       required: true

@@ -1,6 +1,6 @@
 import dotenv from 'dotenv'
 import app from './app.js';
-import connectDb from './db/databaseConnect.js';
+import connectDb from './config/databaseConnect.js';
 
 dotenv.config({ path: "./.env" });
 
@@ -13,4 +13,3 @@ connectDb()
 .catch((err) => {
     console.log("MONGO_DB CONNECTION FIELD", err);
 })
-

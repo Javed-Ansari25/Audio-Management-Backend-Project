@@ -5,9 +5,8 @@ import { uploadAudio, deleteAudioById, updateAudioDetails } from "../controller/
 import { Router } from "express";
 
 const router = Router();
-// apply all routes
-router.use(verifyJWT) 
-router.use(authorize("ADMIN"));
+router.use(verifyJWT) // apply all routes
+// router.use(authorize("artist"));
 
 // route
 router.route("/upload-audio").post(

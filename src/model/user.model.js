@@ -32,13 +32,8 @@ const userSchema = new mongoose.Schema(
 
     role: {
       type: String,
-      enum: ['ADMIN', 'USER'],
+      enum: ['artist', 'USER'],
       default: 'USER',
-    },
-
-    lastLoginAt: {
-      type: Date,
-      default: Date.now,
     },
 
     isActive: {

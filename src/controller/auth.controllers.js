@@ -1,31 +1,13 @@
-import { Audio } from '../model/audio.model.js';
 import { User } from '../model/user.model.js';
+import { Audio } from '../model/audio.model.js';
 import { ApiError } from '../utils/apiError.js';
 import { ApiResponse } from '../utils/apiResponse.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
+import { generateTokens, cookieOptions } from "../utils/token.js";
 import jwt from 'jsonwebtoken';
 
-const generateAccessAndRefreshToken = async (userId) => {
-  try {
-    const user = await User.findById(userId);
-    if(!user) {
-      throw new ApiError(401, "UnAuthorization user");
-    }
-
-    const accessToken = user.accessTokenGenerate();
-    const refreshToken = user.refreshTokenGenerate();
-
-    user.refreshToken = refreshToken;
-    await user.save({ validateBeforeSave: false });
-
-    return { accessToken, refreshToken };
-  } catch (error) {
-    throw new ApiError(500, 'Failed to generate tokens');
-  }
-};
-
 const registerUser = asyncHandler(async (req, res) => {
-  const { name, username, email, password } = req.body;
+  const { name, username, email, password, role } = req.body;
 
   if (![name, username, email, password].every(Boolean)) {
     throw new ApiError(400, "All fields are required");
@@ -37,19 +19,25 @@ const registerUser = asyncHandler(async (req, res) => {
       username,
       email,
       password,
-      role: "USER",
+      role
     });
 
-    const userResponse = await User.findById(user._id)
-      .select("name username email role");
+    const userResponse = {
+      _id: user._id,
+      username: user.username,
+      name: user.name,
+      role: user.role
+    };
+
+    // const userResponse = await User.findById(user._id)
+    //   .select("username email role");
 
     return res.status(201).json(
       new ApiResponse(201, userResponse, "User registered successfully")
     );
 
   } catch (error) {
-    // Duplicate key error check (MongoDB)
-    if (error.code === 11000) {
+    if (error.code === 11000) {  // Duplicate key error check (MongoDB)
       throw new ApiError(409, "Email or Username already exists");
     }
     throw error;
@@ -65,7 +53,7 @@ const loginUser = asyncHandler(async (req, res) => {
 
   const user = await User.findOne({
     $or: [{ email }, { username }],
-  }).select("+password role username email");
+  }).select("+password role username");
 
   if (!user) {
     throw new ApiError(401, "Invalid credentials");
@@ -91,7 +79,7 @@ const loginUser = asyncHandler(async (req, res) => {
     throw new ApiError(401, "Invalid credentials");
   }
 
-  const { accessToken, refreshToken } = await generateAccessAndRefreshToken(user._id);
+  const { accessToken, refreshToken } = await generateTokens(user);
   await user.updateOne(
     {_id: user._id},
     {
@@ -106,20 +94,9 @@ const loginUser = asyncHandler(async (req, res) => {
   const userResponse = {
     _id: user._id,
     username: user.username,
-    email: user.email,
     name: user.name,
     role: user.role
   };
-
-  const cookieOptions = {
-    httpOnly: true,
-    secure: true, 
-  };
-
-  User.updateOne(
-    { _id: user._id },
-    { lastLoginAt: new Date() }
-  );
 
   return res
     .status(200)
@@ -128,7 +105,7 @@ const loginUser = asyncHandler(async (req, res) => {
     .json(
       new ApiResponse(
         200,
-        { user: userResponse, accessToken },
+        { user: userResponse},
         "User logged in successfully"
       )
     );
@@ -139,12 +116,6 @@ const logoutUser = asyncHandler(async (req, res) => {
     { _id: req.user._id },
     { $unset: { refreshToken: 1 } },
   );
-
-  const cookieOptions = {
-    httpOnly: true,
-    secure: true,
-    sameSite: "strict"
-  };
 
   return res
     .status(200)
@@ -167,25 +138,20 @@ const regenerateAccessAndRefreshToken = asyncHandler(async (req, res) => {
     throw new ApiError(401, 'Invalid or expired refresh token');
   }
 
-  const { accessToken, refreshToken } = await generateAccessAndRefreshToken(user._id);
-
-  const options = {
-    httpOnly: true,
-    secure: true,
-  };
+  const { accessToken, refreshToken } = await generateTokens(user);
 
   return res
     .status(200)
-    .cookie('accessToken', accessToken, options)
-    .cookie('refreshToken', refreshToken, options)
+    .cookie('accessToken', accessToken, cookieOptions)
+    .cookie('refreshToken', refreshToken, cookieOptions)
     .json(
       new ApiResponse(200, { accessToken, refreshToken }, 'Token refreshed'),
     );
 });
 
-const getAudioFile = asyncHandler(async (req, res) => {
+const getAudio = asyncHandler(async (req, res) => {
   const audio = await Audio.find({ isActive: true })
-  .populate("uploadedBy", "username email")
+  .populate("artist", "username email")
 
   return res
     .status(200)
@@ -196,6 +162,6 @@ export {
   registerUser,
   loginUser,
   logoutUser,
+  getAudio,
   regenerateAccessAndRefreshToken,
-  getAudioFile,
 };
