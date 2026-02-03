@@ -1,5 +1,4 @@
 import { User } from '../model/user.model.js';
-import { Audio } from '../model/audio.model.js';
 import { ApiError } from '../utils/apiError.js';
 import { ApiResponse } from '../utils/apiResponse.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
@@ -149,19 +148,9 @@ const regenerateAccessAndRefreshToken = asyncHandler(async (req, res) => {
     );
 });
 
-const getAudio = asyncHandler(async (req, res) => {
-  const audio = await Audio.find({ isActive: true })
-  .populate("artist", "username email")
-
-  return res
-    .status(200)
-    .json(new ApiResponse(200, audio, 'Audio fetched successfully'));
-});
-
 export {
   registerUser,
   loginUser,
   logoutUser,
-  getAudio,
   regenerateAccessAndRefreshToken,
 };

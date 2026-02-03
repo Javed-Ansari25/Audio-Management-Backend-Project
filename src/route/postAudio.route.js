@@ -1,7 +1,7 @@
 import verifyJWT from "../middlewares/auth.middleware.js";
 import authorize from "../middlewares/authorize.middleware.js";
 import upload from "../middlewares/multer.middleware.js";
-import { uploadAudio, deleteAudioById, updateAudioDetails } from "../controller/audio.controllers.js";
+import { uploadAudio, deleteAudioById, updateAudioDetails } from "../controller/postAudio.controllers.js";
 import { Router } from "express";
 
 const router = Router();
