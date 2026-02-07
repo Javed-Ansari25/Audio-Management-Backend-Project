@@ -24,7 +24,7 @@ import albumRouter from "./route/album.route.js"
 
 app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/artist", artistRouter);
-app.use("/api/v1/users", userRouter);
+app.use("/api/v1", userRouter);
 app.use("/api/v1/admin", adminRouter);
 app.use("/api/v1/album", albumRouter);
 
